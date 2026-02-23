@@ -1,0 +1,82 @@
+/**
+ * Base styles — reset, typography, focus
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  min-height: 100vh;
+}
+
+/* Headings — serif, confident */
+h1, h2, h3, .ds-heading {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
+}
+
+h1, .ds-heading-1 {
+  font-size: var(--text-4xl);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-2);
+}
+
+h2, .ds-heading-2 {
+  font-size: var(--text-3xl);
+}
+
+h3, .ds-heading-3 {
+  font-size: var(--text-xl);
+}
+
+p {
+  margin: 0 0 var(--space-2) 0;
+  max-width: var(--measure);
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+.ds-subtext {
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+  max-width: var(--measure);
+  margin-top: 0;
+}
+
+/* Focus — clear, accessible */
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Selection */
+::selection {
+  background: var(--color-accent);
+  color: #FFFFFF;
+}

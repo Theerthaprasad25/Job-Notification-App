@@ -1,0 +1,258 @@
+/**
+ * Component styles
+ * Same border radius everywhere. Clean borders. No heavy shadows.
+ */
+
+/* -------------------------------------------------------------------------
+   BUTTONS
+   ------------------------------------------------------------------------- */
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 500;
+  line-height: 1.25;
+  border-radius: var(--radius);
+  border: var(--border-width) solid transparent;
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
+}
+
+.ds-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary — solid deep red */
+.ds-btn--primary {
+  background: var(--color-accent);
+  color: #FFFFFF;
+  border-color: var(--color-accent);
+}
+
+.ds-btn--primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.ds-btn--primary:active:not(:disabled) {
+  background: var(--color-accent-active);
+  border-color: var(--color-accent-active);
+}
+
+/* Secondary — outlined */
+.ds-btn--secondary {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.ds-btn--secondary:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  border-color: var(--color-text-muted);
+}
+
+.ds-btn--secondary:active:not(:disabled) {
+  background: var(--color-border);
+}
+
+/* -------------------------------------------------------------------------
+   BADGES (e.g. status: Not Started / In Progress / Shipped)
+   ------------------------------------------------------------------------- */
+.ds-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius);
+  border: var(--border);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
+.ds-badge--shipped {
+  border-color: var(--color-success);
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.ds-badge--progress {
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
+.ds-badge--not-started {
+  /* default */
+}
+
+/* -------------------------------------------------------------------------
+   CARDS — subtle border, no drop shadows
+   ------------------------------------------------------------------------- */
+.ds-card {
+  background: var(--color-surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  transition: border-color var(--transition-fast);
+}
+
+.ds-card:hover {
+  border-color: var(--color-text-muted);
+}
+
+.ds-card__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  margin: 0 0 var(--space-2) 0;
+}
+
+.ds-card__body {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+}
+
+.ds-card__body + .ds-card__body {
+  margin-top: var(--space-2);
+}
+
+/* -------------------------------------------------------------------------
+   INPUTS — clean borders, clear focus state
+   ------------------------------------------------------------------------- */
+.ds-input,
+.ds-textarea {
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ds-input::placeholder,
+.ds-textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.ds-input:hover:not(:disabled),
+.ds-textarea:hover:not(:disabled) {
+  border-color: var(--color-text-muted);
+}
+
+.ds-input:focus,
+.ds-textarea:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 1px var(--color-border-focus);
+}
+
+.ds-input:disabled,
+.ds-textarea:disabled {
+  background: var(--color-bg);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.ds-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.ds-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.ds-field + .ds-field {
+  margin-top: var(--space-2);
+}
+
+/* -------------------------------------------------------------------------
+   COPYABLE PROMPT BOX (Secondary panel)
+   ------------------------------------------------------------------------- */
+.ds-copy-box {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  background: var(--color-bg);
+  border: var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+  position: relative;
+}
+
+.ds-copy-box__actions {
+  margin-top: var(--space-1);
+}
+
+/* -------------------------------------------------------------------------
+   ERROR STATE — explain what went wrong and how to fix; never blame user
+   ------------------------------------------------------------------------- */
+.ds-error {
+  padding: var(--space-2);
+  background: #F8E8E8;
+  border: 1px solid #C4A0A0;
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+}
+
+.ds-error__title {
+  font-weight: 600;
+  margin: 0 0 var(--space-1) 0;
+}
+
+.ds-error__message {
+  margin: 0 0 var(--space-1) 0;
+}
+
+.ds-error__action {
+  margin: var(--space-2) 0 0 0;
+}
+
+/* -------------------------------------------------------------------------
+   EMPTY STATE — guide next action; never blank
+   ------------------------------------------------------------------------- */
+.ds-empty {
+  padding: var(--space-4);
+  text-align: center;
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.ds-empty__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  margin: 0 0 var(--space-1) 0;
+}
+
+.ds-empty__text {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+  max-width: var(--measure);
+  margin: 0 auto var(--space-2) auto;
+}
+
+.ds-empty__action {
+  margin-top: var(--space-2);
+}

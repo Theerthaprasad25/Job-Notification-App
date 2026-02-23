@@ -1,0 +1,207 @@
+/**
+ * App shell: shared navigation and route placeholder
+ * Follows design system: no gradients, no neon, minimal transitions (150–200ms ease-in-out).
+ */
+
+/* -------------------------------------------------------------------------
+   BRAND LINK (home) — same active treatment as nav links
+   ------------------------------------------------------------------------- */
+a.ds-topbar__brand {
+  text-decoration: none;
+  color: inherit;
+  padding: var(--space-1) 0;
+  border-bottom: 2px solid transparent;
+  transition: border-color var(--transition-base);
+}
+
+a.ds-topbar__brand:hover {
+  color: var(--color-text);
+}
+
+a.ds-topbar__brand.is-active {
+  border-bottom-color: var(--color-accent);
+}
+
+/* -------------------------------------------------------------------------
+   TOP BAR WITH NAV LINKS
+   ------------------------------------------------------------------------- */
+.ds-topbar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ds-topbar__link {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  padding: var(--space-1) 0;
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-base), border-color var(--transition-base);
+}
+
+.ds-topbar__link:hover {
+  color: var(--color-text);
+}
+
+.ds-topbar__link.is-active {
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
+}
+
+/* -------------------------------------------------------------------------
+   HAMBURGER (mobile only)
+   ------------------------------------------------------------------------- */
+.ds-topbar__menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: transparent;
+  border: var(--border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.ds-topbar__menu-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+.ds-topbar__menu-btn[aria-expanded="true"] .ds-topbar__menu-btn__bar:nth-child(1) {
+  transform: translateY(5px) rotate(45deg);
+}
+
+.ds-topbar__menu-btn[aria-expanded="true"] .ds-topbar__menu-btn__bar:nth-child(2) {
+  opacity: 0;
+}
+
+.ds-topbar__menu-btn[aria-expanded="true"] .ds-topbar__menu-btn__bar:nth-child(3) {
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+.ds-topbar__menu-btn__bar {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--color-text);
+  transition: opacity var(--transition-base), transform var(--transition-base);
+}
+
+.ds-topbar__menu-btn__bar + .ds-topbar__menu-btn__bar {
+  margin-top: 4px;
+}
+
+/* -------------------------------------------------------------------------
+   DROPDOWN PANEL (mobile)
+   ------------------------------------------------------------------------- */
+.ds-topbar__dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border-bottom: var(--border);
+  padding: var(--space-2) var(--space-3);
+  flex-direction: column;
+  gap: 0;
+  box-shadow: none;
+}
+
+.ds-topbar__dropdown.is-open {
+  display: flex;
+}
+
+.ds-topbar__dropdown .ds-topbar__link {
+  padding: var(--space-2);
+  border-bottom: none;
+  border-left: 3px solid transparent;
+}
+
+.ds-topbar__dropdown .ds-topbar__link.is-active {
+  border-left-color: var(--color-accent);
+  border-bottom-color: transparent;
+}
+
+/* -------------------------------------------------------------------------
+   ROUTE PLACEHOLDER (context area)
+   ------------------------------------------------------------------------- */
+.ds-route-placeholder {
+  padding: var(--space-4) var(--space-3);
+  max-width: var(--measure);
+}
+
+.ds-route-placeholder__headline {
+  font-family: var(--font-heading);
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.ds-route-placeholder__subtext {
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+/* -------------------------------------------------------------------------
+   404 PAGE
+   ------------------------------------------------------------------------- */
+.ds-route-404 {
+  padding: var(--space-4) var(--space-3);
+  max-width: var(--measure);
+}
+
+.ds-route-404__headline {
+  font-family: var(--font-heading);
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.ds-route-404__subtext {
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+/* -------------------------------------------------------------------------
+   RESPONSIVE: show hamburger, hide nav; show dropdown when open
+   ------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .ds-topbar {
+    position: relative;
+    flex-wrap: wrap;
+  }
+
+  .ds-topbar__nav {
+    display: none;
+  }
+
+  .ds-topbar__menu-btn {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ds-topbar__dropdown {
+    width: 100%;
+  }
+}
+
+@media (min-width: 769px) {
+  .ds-topbar__dropdown {
+    display: none !important;
+  }
+}

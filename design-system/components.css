@@ -177,6 +177,10 @@
   margin-bottom: var(--space-1);
 }
 
+.ds-field {
+  display: block;
+}
+
 .ds-field + .ds-field {
   margin-top: var(--space-2);
 }

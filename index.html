@@ -3,82 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Job Notification App — Design System</title>
+  <title>Job Notification App</title>
   <link rel="stylesheet" href="design-system/index.css" />
 </head>
 <body>
   <div class="ds-page">
-    <!-- TOP BAR -->
     <header class="ds-topbar">
-      <span class="ds-topbar__brand">Job Notification App</span>
-      <span class="ds-topbar__progress">Step 1 / 4</span>
-      <span class="ds-badge ds-badge--progress ds-topbar__status">In Progress</span>
+      <a href="/" class="ds-topbar__brand">Job Notification App</a>
+
+      <nav class="ds-topbar__nav" aria-label="Main">
+        <a class="ds-topbar__link" href="/dashboard" data-route="/dashboard">Dashboard</a>
+        <a class="ds-topbar__link" href="/saved" data-route="/saved">Saved</a>
+        <a class="ds-topbar__link" href="/digest" data-route="/digest">Digest</a>
+        <a class="ds-topbar__link" href="/settings" data-route="/settings">Settings</a>
+        <a class="ds-topbar__link" href="/proof" data-route="/proof">Proof</a>
+      </nav>
+
+      <button type="button" class="ds-topbar__menu-btn" aria-expanded="false" aria-controls="nav-dropdown" aria-label="Open menu">
+        <span class="ds-topbar__menu-btn__bar" aria-hidden="true"></span>
+        <span class="ds-topbar__menu-btn__bar" aria-hidden="true"></span>
+        <span class="ds-topbar__menu-btn__bar" aria-hidden="true"></span>
+      </button>
+
+      <div class="ds-topbar__dropdown" id="nav-dropdown" role="menu" hidden>
+        <a class="ds-topbar__link" href="/dashboard" data-route="/dashboard" role="menuitem">Dashboard</a>
+        <a class="ds-topbar__link" href="/saved" data-route="/saved" role="menuitem">Saved</a>
+        <a class="ds-topbar__link" href="/digest" data-route="/digest" role="menuitem">Digest</a>
+        <a class="ds-topbar__link" href="/settings" data-route="/settings" role="menuitem">Settings</a>
+        <a class="ds-topbar__link" href="/proof" data-route="/proof" role="menuitem">Proof</a>
+      </div>
     </header>
 
-    <!-- CONTEXT HEADER -->
-    <section class="ds-context-header">
-      <h1 class="ds-context-header__headline">Design system foundation</h1>
-      <p class="ds-context-header__subtext">Layout, tokens, and components are in place. No product features yet.</p>
-    </section>
-
-    <!-- MAIN: WORKSPACE + PANEL -->
-    <main class="ds-main">
-      <div class="ds-workspace">
-        <div class="ds-card" style="max-width: 480px;">
-          <h2 class="ds-card__title">Primary workspace</h2>
-          <p class="ds-card__body">Clean cards, predictable components, subtle borders. No crowding, no heavy shadows.</p>
-          <p class="ds-card__body">Spacing uses only: 8px, 16px, 24px, 40px, 64px.</p>
-        </div>
-        <div class="ds-card" style="max-width: 480px; margin-top: 24px;">
-          <h2 class="ds-card__title">Components</h2>
-          <p class="ds-card__body">Primary and secondary buttons, inputs, and badges are defined in the design system.</p>
-          <div style="margin-top: 16px; display: flex; gap: 16px; flex-wrap: wrap;">
-            <button type="button" class="ds-btn ds-btn--primary">Primary action</button>
-            <button type="button" class="ds-btn ds-btn--secondary">Secondary</button>
-          </div>
-          <div class="ds-field" style="margin-top: 24px;">
-            <label class="ds-label" for="demo-input">Label</label>
-            <input id="demo-input" type="text" class="ds-input" placeholder="Clean border, clear focus" />
-          </div>
-        </div>
-      </div>
-
-      <aside class="ds-panel">
-        <h3 class="ds-panel__title">Step explanation</h3>
-        <p class="ds-panel__content">Secondary panel holds step copy, copyable prompts, and consistent buttons.</p>
-        <div class="ds-copy-box">
-          <code>Copyable prompt or code snippet</code>
-          <div class="ds-copy-box__actions">
-            <button type="button" class="ds-btn ds-btn--secondary">Copy</button>
-          </div>
-        </div>
-        <div style="margin-top: 24px;">
-          <button type="button" class="ds-btn ds-btn--primary">Continue</button>
-        </div>
-      </aside>
+    <main id="route-content" class="ds-route-placeholder">
+      <!-- Injected by router -->
     </main>
 
-    <!-- PROOF FOOTER -->
     <footer class="ds-proof-footer">
       <ul class="ds-proof-footer__list">
-        <li class="ds-proof-footer__item" data-done="true">
-          <span class="ds-proof-footer__checkbox" aria-hidden="true"></span>
-          <span>UI Built</span>
-        </li>
-        <li class="ds-proof-footer__item" data-done="false">
-          <span class="ds-proof-footer__checkbox" aria-hidden="true"></span>
-          <span>Logic Working</span>
-        </li>
-        <li class="ds-proof-footer__item" data-done="false">
-          <span class="ds-proof-footer__checkbox" aria-hidden="true"></span>
-          <span>Test Passed</span>
-        </li>
-        <li class="ds-proof-footer__item" data-done="false">
-          <span class="ds-proof-footer__checkbox" aria-hidden="true"></span>
-          <span>Deployed</span>
-        </li>
+        <li class="ds-proof-footer__item" data-done="true"><span class="ds-proof-footer__checkbox" aria-hidden="true"></span><span>UI Built</span></li>
+        <li class="ds-proof-footer__item" data-done="false"><span class="ds-proof-footer__checkbox" aria-hidden="true"></span><span>Logic Working</span></li>
+        <li class="ds-proof-footer__item" data-done="false"><span class="ds-proof-footer__checkbox" aria-hidden="true"></span><span>Test Passed</span></li>
+        <li class="ds-proof-footer__item" data-done="false"><span class="ds-proof-footer__checkbox" aria-hidden="true"></span><span>Deployed</span></li>
       </ul>
     </footer>
   </div>
+  <script src="js/router.js"></script>
 </body>
 </html>

@@ -68,21 +68,29 @@
   }
 
   function renderDashboard(container) {
-    container.className = "ds-route-placeholder ds-empty-wrapper";
-    container.innerHTML =
-      '<div class="ds-empty">' +
-      '<h2 class="ds-empty__title">No jobs yet</h2>' +
-      '<p class="ds-empty__text">In the next step, you will load a realistic dataset.</p>' +
-      "</div>";
+    if (window.JobsModule && window.JobsModule.renderDashboard) {
+      window.JobsModule.renderDashboard(container);
+    } else {
+      container.className = "ds-route-placeholder ds-empty-wrapper";
+      container.innerHTML =
+        '<div class="ds-empty">' +
+        '<h2 class="ds-empty__title">No jobs yet</h2>' +
+        '<p class="ds-empty__text">In the next step, you will load a realistic dataset.</p>' +
+        "</div>";
+    }
   }
 
   function renderSaved(container) {
-    container.className = "ds-route-placeholder ds-empty-wrapper";
-    container.innerHTML =
-      '<div class="ds-empty">' +
-      '<h2 class="ds-empty__title">No saved jobs</h2>' +
-      '<p class="ds-empty__text">Jobs you save for later will appear here.</p>' +
-      "</div>";
+    if (window.JobsModule && window.JobsModule.renderSaved) {
+      window.JobsModule.renderSaved(container);
+    } else {
+      container.className = "ds-route-placeholder ds-empty-wrapper";
+      container.innerHTML =
+        '<div class="ds-empty">' +
+        '<h2 class="ds-empty__title">No saved jobs</h2>' +
+        '<p class="ds-empty__text">Jobs you save for later will appear here.</p>' +
+        "</div>";
+    }
   }
 
   function renderDigest(container) {

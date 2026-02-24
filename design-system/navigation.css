@@ -133,11 +133,27 @@ a.ds-topbar__brand.is-active {
    ROUTE PLACEHOLDER (context area)
    ------------------------------------------------------------------------- */
 .ds-route-placeholder {
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-5) var(--space-3);
   max-width: var(--measure);
 }
 
-.ds-route-placeholder__headline {
+/* -------------------------------------------------------------------------
+   LANDING PAGE (/)
+   ------------------------------------------------------------------------- */
+.ds-landing {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - var(--topbar-height) - var(--footer-height));
+  padding: var(--space-5) var(--space-3);
+}
+
+.ds-landing__content {
+  text-align: center;
+  max-width: var(--measure);
+}
+
+.ds-landing__headline {
   font-family: var(--font-heading);
   font-size: var(--text-4xl);
   font-weight: 600;
@@ -146,8 +162,65 @@ a.ds-topbar__brand.is-active {
   margin: 0 0 var(--space-2) 0;
 }
 
-.ds-route-placeholder__subtext {
+.ds-landing__subtext {
   font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.ds-landing__cta {
+  text-decoration: none;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-base);
+}
+
+/* -------------------------------------------------------------------------
+   SETTINGS PAGE
+   ------------------------------------------------------------------------- */
+.ds-settings__headline {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.ds-settings__subtext {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.ds-settings__form {
+  max-width: 480px;
+}
+
+/* -------------------------------------------------------------------------
+   EMPTY STATE WRAPPER
+   ------------------------------------------------------------------------- */
+.ds-empty-wrapper {
+  padding: var(--space-5) var(--space-3);
+}
+
+.ds-empty-wrapper .ds-empty {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* -------------------------------------------------------------------------
+   PROOF PAGE
+   ------------------------------------------------------------------------- */
+.ds-proof-page__headline {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.ds-proof-page__subtext {
+  font-size: var(--text-base);
   color: var(--color-text-muted);
   line-height: var(--leading-relaxed);
   margin: 0;

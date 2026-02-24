@@ -438,8 +438,194 @@
     });
   }
 
+  function getTodayDateString() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  function getDigestStorageKey(dateStr) {
+    return "jobTrackerDigest_" + dateStr;
+  }
+
+  function getDigestForToday() {
+    var key = getDigestStorageKey(getTodayDateString());
+    try {
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function generateDigest() {
+    var prefs = Preferences ? Preferences.getPreferences() : null;
+    if (!prefs) return null;
+    var scored = jobs.slice().map(function (j) {
+      var s = computeMatchScore(j, prefs);
+      return { job: j, _matchScore: s };
+    });
+    scored.sort(function (a, b) {
+      var diff = (b._matchScore || 0) - (a._matchScore || 0);
+      if (diff !== 0) return diff;
+      return (a.job.postedDaysAgo || 99) - (b.job.postedDaysAgo || 99);
+    });
+    var top10 = scored.slice(0, 10).map(function (x) {
+      var j = x.job;
+      j._matchScore = x._matchScore;
+      return j;
+    });
+    var payload = { date: getTodayDateString(), jobs: top10 };
+    localStorage.setItem(getDigestStorageKey(getTodayDateString()), JSON.stringify(payload));
+    return payload;
+  }
+
+  function getOrGenerateDigest(forceRegenerate) {
+    var existing = !forceRegenerate ? getDigestForToday() : null;
+    if (existing && existing.jobs && existing.jobs.length > 0) return existing;
+    return generateDigest();
+  }
+
+  function formatDigestAsPlainText(digestJobs) {
+    var lines = ["Top 10 Jobs For You — 9AM Digest", getTodayDateString(), ""];
+    digestJobs.forEach(function (j, i) {
+      lines.push((i + 1) + ". " + (j.title || "") + " @ " + (j.company || ""));
+      lines.push("   " + (j.location || "") + " · " + (j.experience || "") + " · Match: " + (j._matchScore || 0) + "%");
+      lines.push("   " + (j.applyUrl || ""));
+      lines.push("");
+    });
+    lines.push("This digest was generated based on your preferences.");
+    return lines.join("\n");
+  }
+
+  function formatDigestForEmailBody(digestJobs) {
+    return formatDigestAsPlainText(digestJobs);
+  }
+
+  function renderDigest(container) {
+    var hasPrefs = Preferences ? Preferences.hasPreferences() : false;
+    var formattedDate = new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+
+    container.className = "ds-route-placeholder ds-digest";
+
+    if (!hasPrefs) {
+      container.innerHTML =
+        '<div class="ds-digest__block">' +
+        '<p class="ds-digest__block-text">Set preferences to generate a personalized digest.</p>' +
+        '<a href="/settings" class="ds-btn ds-btn--primary">Go to Settings</a>' +
+        "</div>";
+      return;
+    }
+
+    var digestData = null;
+    var digestContent = "";
+    var actionsHtml = "";
+
+    container.innerHTML =
+      '<div class="ds-digest__wrapper">' +
+      '<p class="ds-digest__note">Demo Mode: Daily 9AM trigger simulated manually.</p>' +
+      '<button type="button" class="ds-btn ds-btn--primary ds-digest__generate" id="digest-generate-btn">Generate Today\'s 9AM Digest (Simulated)</button>' +
+      '<div class="ds-digest__card" id="digest-card"></div>' +
+      "</div>";
+
+    var cardEl = container.querySelector("#digest-card");
+    var btnEl = container.querySelector("#digest-generate-btn");
+
+    function renderDigestContent(data) {
+      if (!data) {
+        cardEl.innerHTML =
+          '<div class="ds-digest__empty">' +
+          '<p class="ds-digest__empty-text">Click the button above to generate your digest.</p>' +
+          "</div>";
+        return;
+      }
+      if (!data.jobs || data.jobs.length === 0) {
+        cardEl.innerHTML =
+          '<div class="ds-digest__empty">' +
+          '<h2 class="ds-digest__empty-title">No matching roles today</h2>' +
+          '<p class="ds-digest__empty-text">Check again tomorrow.</p>' +
+          "</div>";
+        return;
+      }
+
+      var jobsHtml = data.jobs.map(function (j) {
+        var badgeClass = getMatchScoreBadgeClass(j._matchScore || 0);
+        return (
+          '<div class="ds-digest__item">' +
+          '<h3 class="ds-digest__item-title">' + escapeHtml(j.title || "") + '</h3>' +
+          '<p class="ds-digest__item-company">' + escapeHtml(j.company || "") + '</p>' +
+          '<p class="ds-digest__item-meta">' + escapeHtml(j.location || "") + " · " + escapeHtml(j.experience || "") + '</p>' +
+          '<p class="ds-digest__item-score"><span class="ds-match-badge ' + badgeClass + '">' + (j._matchScore || 0) + '%</span></p>' +
+          '<a href="' + escapeHtml(j.applyUrl || "#") + '" target="_blank" rel="noopener" class="ds-btn ds-btn--primary ds-digest__apply">Apply</a>' +
+          "</div>"
+        );
+      }).join("");
+
+      cardEl.innerHTML =
+        '<div class="ds-digest__header">' +
+        '<h1 class="ds-digest__headline">Top 10 Jobs For You — 9AM Digest</h1>' +
+        '<p class="ds-digest__subtext">' + formattedDate + '</p>' +
+        "</div>" +
+        '<div class="ds-digest__list">' + jobsHtml + '</div>' +
+        '<div class="ds-digest__footer">' +
+        '<p class="ds-digest__footer-text">This digest was generated based on your preferences.</p>' +
+        '<div class="ds-digest__actions">' +
+        '<button type="button" class="ds-btn ds-btn--secondary" id="digest-copy-btn">Copy Digest to Clipboard</button>' +
+        '<a href="#" class="ds-btn ds-btn--secondary" id="digest-email-link">Create Email Draft</a>' +
+        "</div>" +
+        "</div>";
+    }
+
+    function loadAndShow() {
+      digestData = getDigestForToday();
+      if (digestData && digestData.jobs && digestData.jobs.length > 0) {
+        renderDigestContent(digestData);
+        var copyBtn = cardEl.querySelector("#digest-copy-btn");
+        var emailLink = cardEl.querySelector("#digest-email-link");
+        if (copyBtn) {
+          copyBtn.onclick = function () {
+            var text = formatDigestAsPlainText(digestData.jobs);
+            navigator.clipboard.writeText(text).then(function () { copyBtn.textContent = "Copied!"; });
+          };
+        }
+        if (emailLink) {
+          var body = encodeURIComponent(formatDigestForEmailBody(digestData.jobs));
+          emailLink.href = "mailto:?subject=" + encodeURIComponent("My 9AM Job Digest") + "&body=" + body;
+          emailLink.setAttribute("target", "_blank");
+        }
+      } else {
+        renderDigestContent(digestData);
+      }
+    }
+
+    btnEl.onclick = function () {
+      digestData = getOrGenerateDigest(false);
+      renderDigestContent(digestData);
+      if (digestData && digestData.jobs && digestData.jobs.length > 0) {
+        var copyBtn = cardEl.querySelector("#digest-copy-btn");
+        var emailLink = cardEl.querySelector("#digest-email-link");
+        if (copyBtn) {
+          copyBtn.onclick = function () {
+            var text = formatDigestAsPlainText(digestData.jobs);
+            navigator.clipboard.writeText(text).then(function () { copyBtn.textContent = "Copied!"; });
+          };
+        }
+        if (emailLink) {
+          var body = encodeURIComponent(formatDigestForEmailBody(digestData.jobs));
+          emailLink.href = "mailto:?subject=" + encodeURIComponent("My 9AM Job Digest") + "&body=" + body;
+          emailLink.setAttribute("target", "_blank");
+        }
+      }
+    };
+
+    loadAndShow();
+  }
+
   window.JobsModule = {
     renderDashboard: renderDashboard,
-    renderSaved: renderSaved
+    renderSaved: renderSaved,
+    renderDigest: renderDigest
   };
 })();

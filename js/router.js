@@ -75,12 +75,16 @@
   }
 
   function renderDigest(container) {
-    container.className = "ds-route-placeholder ds-empty-wrapper";
-    container.innerHTML =
-      '<div class="ds-empty">' +
-      '<h2 class="ds-empty__title">Daily digest</h2>' +
-      '<p class="ds-empty__text">Your personalized job summary will be delivered here each morning at 9AM.</p>' +
-      "</div>";
+    if (window.JobsModule && window.JobsModule.renderDigest) {
+      window.JobsModule.renderDigest(container);
+    } else {
+      container.className = "ds-route-placeholder ds-empty-wrapper";
+      container.innerHTML =
+        '<div class="ds-empty">' +
+        '<h2 class="ds-empty__title">Daily digest</h2>' +
+        '<p class="ds-empty__text">Your personalized job summary will be delivered here each morning at 9AM.</p>' +
+        "</div>";
+    }
   }
 
   function renderProof(container) {

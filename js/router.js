@@ -38,33 +38,14 @@
   }
 
   function renderSettings(container) {
-    container.className = "ds-route-placeholder ds-settings";
-    container.innerHTML =
-      '<h1 class="ds-settings__headline">Settings</h1>' +
-      '<p class="ds-settings__subtext">Configure your job preferences.</p>' +
-      '<div class="ds-settings__form">' +
-      '<div class="ds-field">' +
-      '<label class="ds-label" for="role-keywords">Role keywords</label>' +
-      '<input type="text" id="role-keywords" class="ds-input" placeholder="e.g. Software Engineer, Product Manager" />' +
-      "</div>" +
-      '<div class="ds-field">' +
-      '<label class="ds-label" for="locations">Preferred locations</label>' +
-      '<input type="text" id="locations" class="ds-input" placeholder="e.g. San Francisco, Remote" />' +
-      "</div>" +
-      '<div class="ds-field">' +
-      '<label class="ds-label" for="mode">Mode</label>' +
-      '<select id="mode" class="ds-input">' +
-      '<option value="">Select mode</option>' +
-      '<option value="remote">Remote</option>' +
-      '<option value="hybrid">Hybrid</option>' +
-      '<option value="onsite">Onsite</option>' +
-      "</select>" +
-      "</div>" +
-      '<div class="ds-field">' +
-      '<label class="ds-label" for="experience">Experience level</label>' +
-      '<input type="text" id="experience" class="ds-input" placeholder="e.g. Mid-level, Senior" />' +
-      "</div>" +
-      "</div>";
+    if (window.SettingsModule && window.SettingsModule.renderSettings) {
+      window.SettingsModule.renderSettings(container);
+    } else {
+      container.className = "ds-route-placeholder ds-settings";
+      container.innerHTML =
+        '<h1 class="ds-settings__headline">Settings</h1>' +
+        '<p class="ds-settings__subtext">Configure your job preferences.</p>';
+    }
   }
 
   function renderDashboard(container) {

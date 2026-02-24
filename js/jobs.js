@@ -1,12 +1,13 @@
 /**
  * Job Notification Tracker — Jobs module
- * Handles dashboard, saved page, filtering, modal, save/apply
+ * Handles dashboard, saved page, filtering, modal, save/apply, match scoring
  */
 (function () {
   "use strict";
 
   var STORAGE_KEY = "job-tracker-saved";
   var jobs = window.JOBS_DATA || [];
+  var Preferences = window.PreferencesModule;
 
   function getSavedIds() {
     try {
@@ -45,7 +46,77 @@
     return Object.keys(seen).sort();
   }
 
-  function filterAndSortJobs(filters) {
+  /**
+   * Match score engine — exact rules per specification
+   * +25 roleKeyword in title, +15 in description
+   * +15 location match, +10 mode match, +10 experience match
+   * +15 skills overlap, +5 postedDaysAgo<=2, +5 LinkedIn
+   * Cap at 100
+   */
+  function computeMatchScore(job, prefs) {
+    if (!prefs) return 0;
+    var score = 0;
+
+    var roleKeywords = (prefs.roleKeywords || "").split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+    var title = (job.title || "").toLowerCase();
+    var desc = (job.description || "").toLowerCase();
+
+    if (roleKeywords.length > 0) {
+      var inTitle = roleKeywords.some(function (kw) { return title.indexOf(kw) >= 0; });
+      if (inTitle) score += 25;
+      var inDesc = roleKeywords.some(function (kw) { return desc.indexOf(kw) >= 0; });
+      if (inDesc) score += 15;
+    }
+
+    var prefLocs = prefs.preferredLocations || [];
+    if (prefLocs.length > 0 && job.location && prefLocs.indexOf(job.location) >= 0) {
+      score += 15;
+    }
+
+    var prefModes = prefs.preferredMode || [];
+    if (prefModes.length > 0 && job.mode && prefModes.indexOf(job.mode) >= 0) {
+      score += 10;
+    }
+
+    if (prefs.experienceLevel && job.experience === prefs.experienceLevel) {
+      score += 10;
+    }
+
+    var userSkills = (prefs.skills || "").split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+    var jobSkills = (job.skills || []).map(function (s) { return String(s).toLowerCase(); });
+    if (userSkills.length > 0 && jobSkills.length > 0) {
+      var overlap = userSkills.some(function (us) {
+        return jobSkills.some(function (js) { return js.indexOf(us) >= 0 || us.indexOf(js) >= 0; });
+      });
+      if (overlap) score += 15;
+    }
+
+    if ((job.postedDaysAgo || 99) <= 2) score += 5;
+    if ((job.source || "").toLowerCase() === "linkedin") score += 5;
+
+    return Math.min(100, score);
+  }
+
+  function getMatchScoreBadgeClass(score) {
+    if (score >= 80) return "ds-match-badge--high";
+    if (score >= 60) return "ds-match-badge--medium";
+    if (score >= 40) return "ds-match-badge--neutral";
+    return "ds-match-badge--low";
+  }
+
+  function extractSalaryForSort(salaryRange) {
+    if (!salaryRange) return 0;
+    var s = String(salaryRange);
+    var match = s.match(/₹(\d+)/) || s.match(/(\d+)\s*[–\-]\s*(\d+)/) || s.match(/(\d+)\s*LPA/);
+    if (match) {
+      if (s.indexOf("LPA") >= 0) return parseInt(match[1], 10) || 0;
+      if (s.indexOf("₹") >= 0) return parseInt(match[1], 10) || 0;
+      return parseInt(match[1], 10) || 0;
+    }
+    return 0;
+  }
+
+  function filterAndSortJobs(filters, prefs) {
     var result = jobs.slice();
     var kw = (filters.keyword || "").toLowerCase().trim();
     if (kw) {
@@ -68,12 +139,33 @@
     if (filters.source) {
       result = result.filter(function (j) { return j.source === filters.source; });
     }
+
     var sortBy = filters.sort || "latest";
+    var showOnlyMatches = filters.showOnlyMatches === true;
+    var minScore = (prefs && prefs.minMatchScore != null) ? prefs.minMatchScore : 40;
+
+    result.forEach(function (j) {
+      j._matchScore = computeMatchScore(j, prefs);
+    });
+
+    if (showOnlyMatches && prefs) {
+      result = result.filter(function (j) { return j._matchScore >= minScore; });
+    }
+
     if (sortBy === "latest") {
       result.sort(function (a, b) { return (a.postedDaysAgo || 99) - (b.postedDaysAgo || 99); });
+    } else if (sortBy === "match") {
+      result.sort(function (a, b) { return (b._matchScore || 0) - (a._matchScore || 0); });
+    } else if (sortBy === "salary") {
+      result.sort(function (a, b) {
+        var sa = extractSalaryForSort(a.salaryRange);
+        var sb = extractSalaryForSort(b.salaryRange);
+        return sb - sa;
+      });
     } else if (sortBy === "oldest") {
       result.sort(function (a, b) { return (b.postedDaysAgo || 0) - (a.postedDaysAgo || 0); });
     }
+
     return result;
   }
 
@@ -88,11 +180,23 @@
     var saved = savedIds.indexOf(job.id) >= 0;
     var saveLabel = isSavedPage ? "Remove" : (saved ? "Saved" : "Save");
     var saveClass = saved ? "ds-btn--secondary ds-job-card__save--saved" : "ds-btn--secondary";
+
+    var prefs = Preferences ? Preferences.getPreferences() : null;
+    var matchScore = prefs ? computeMatchScore(job, prefs) : 0;
+    var matchBadge = "";
+    if (prefs) {
+      var badgeClass = getMatchScoreBadgeClass(matchScore);
+      matchBadge = '<span class="ds-match-badge ' + badgeClass + '">' + matchScore + '%</span>';
+    }
+
     return (
       '<article class="ds-job-card" data-job-id="' + escapeHtml(job.id) + '">' +
       '<div class="ds-job-card__header">' +
       '<h3 class="ds-job-card__title">' + escapeHtml(job.title) + '</h3>' +
+      '<div class="ds-job-card__badges">' +
+      matchBadge +
       '<span class="ds-job-card__badge ds-job-card__badge--' + (job.source || "").toLowerCase() + '">' + escapeHtml(job.source || "") + '</span>' +
+      "</div>" +
       "</div>" +
       '<p class="ds-job-card__company">' + escapeHtml(job.company) + '</p>' +
       '<p class="ds-job-card__meta">' +
@@ -162,23 +266,27 @@
 
   function getFiltersFromForm(form) {
     if (!form) return {};
+    var toggle = form.querySelector("[data-filter=showOnlyMatches]");
     return {
       keyword: (form.querySelector("[data-filter=keyword]") || {}).value || "",
       location: (form.querySelector("[data-filter=location]") || {}).value || "",
       mode: (form.querySelector("[data-filter=mode]") || {}).value || "",
       experience: (form.querySelector("[data-filter=experience]") || {}).value || "",
       source: (form.querySelector("[data-filter=source]") || {}).value || "",
-      sort: (form.querySelector("[data-filter=sort]") || {}).value || "latest"
+      sort: (form.querySelector("[data-filter=sort]") || {}).value || "latest",
+      showOnlyMatches: toggle ? toggle.checked : false
     };
   }
 
-  function renderDashboardCards(container, filteredJobs) {
+  function renderDashboardCards(container, filteredJobs, noMatches) {
     var grid = container.querySelector(".ds-dashboard__grid");
     if (!grid) return;
     if (filteredJobs.length === 0) {
       grid.innerHTML =
         '<div class="ds-dashboard__no-results">' +
-        '<p class="ds-dashboard__no-results-text">No jobs match your search.</p>' +
+        '<p class="ds-dashboard__no-results-text">' +
+        (noMatches ? "No roles match your criteria. Adjust filters or lower threshold." : "No jobs match your search.") +
+        '</p>' +
         "</div>";
       return;
     }
@@ -213,6 +321,8 @@
     var modes = getUniqueValues("mode");
     var exps = getUniqueValues("experience");
     var srcs = getUniqueValues("source");
+    var prefs = Preferences ? Preferences.getPreferences() : null;
+    var hasPrefs = Preferences ? Preferences.hasPreferences() : false;
 
     var locOpts = '<option value="">All locations</option>' + locs.map(function (l) {
       return '<option value="' + escapeHtml(l) + '">' + escapeHtml(l) + "</option>";
@@ -227,9 +337,26 @@
       return '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + "</option>";
     }).join("");
 
+    var bannerHtml = "";
+    if (!hasPrefs) {
+      bannerHtml =
+        '<div class="ds-dashboard__banner">' +
+        'Set your preferences to activate intelligent matching.' +
+        ' <a href="/settings" class="ds-dashboard__banner-link">Go to Settings</a>' +
+        "</div>";
+    }
+
+    var toggleHtml = hasPrefs
+      ? '<label class="ds-dashboard__toggle">' +
+        '<input type="checkbox" data-filter="showOnlyMatches" />' +
+        ' Show only jobs above my threshold' +
+        "</label>"
+      : "";
+
     container.className = "ds-route-placeholder ds-dashboard";
     container.innerHTML =
       '<h1 class="ds-dashboard__headline">Dashboard</h1>' +
+      bannerHtml +
       '<form class="ds-filter-bar" id="dashboard-filters">' +
       '<input type="text" class="ds-input ds-filter-bar__input" data-filter="keyword" placeholder="Search title or company" />' +
       '<select class="ds-input ds-filter-bar__select" data-filter="location">' + locOpts + '</select>' +
@@ -239,15 +366,19 @@
       '<select class="ds-input ds-filter-bar__select" data-filter="sort">' +
       '<option value="latest">Latest</option>' +
       '<option value="oldest">Oldest</option>' +
+      '<option value="match">Match Score</option>' +
+      '<option value="salary">Salary</option>' +
       "</select>" +
+      toggleHtml +
       "</form>" +
       '<div class="ds-dashboard__grid"></div>';
 
     var form = container.querySelector("#dashboard-filters");
     function applyFilters() {
       var f = getFiltersFromForm(form);
-      var filtered = filterAndSortJobs(f);
-      renderDashboardCards(container, filtered);
+      var filtered = filterAndSortJobs(f, prefs);
+      var noMatches = f.showOnlyMatches && filtered.length === 0;
+      renderDashboardCards(container, filtered, noMatches);
     }
     form.addEventListener("input", applyFilters);
     form.addEventListener("change", applyFilters);
@@ -276,7 +407,7 @@
     var grid = container.querySelector(".ds-saved-page__grid");
     savedJobs.forEach(function (job) {
       var card = document.createElement("div");
-      card.innerHTML = renderJobCard(job, true); /* isSavedPage: show Remove */
+      card.innerHTML = renderJobCard(job, true);
       grid.appendChild(card.firstElementChild);
     });
 
@@ -295,8 +426,8 @@
         if (!id) return;
         removeSavedJob(id);
         card.remove();
-        var grid = container.querySelector(".ds-saved-page__grid");
-        if (grid && grid.children.length === 0) {
+        var gridEl = container.querySelector(".ds-saved-page__grid");
+        if (gridEl && gridEl.children.length === 0) {
           container.innerHTML =
             '<div class="ds-empty">' +
             '<h2 class="ds-empty__title">No saved jobs</h2>' +

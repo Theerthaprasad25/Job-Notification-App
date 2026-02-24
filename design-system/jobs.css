@@ -229,6 +229,61 @@
   margin: 0 0 var(--space-2) 0;
 }
 
+.ds-job-card__status {
+  margin: 0 0 var(--space-2) 0;
+}
+
+.ds-job-card__status-label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.ds-job-card__status-select {
+  width: 100%;
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid;
+  border-radius: var(--radius);
+}
+
+.ds-status-badge {
+  font-weight: 500;
+}
+
+.ds-digest__update-item .ds-status-badge {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  border: var(--border-width) solid;
+  font-size: var(--text-xs);
+}
+
+.ds-status-badge--neutral {
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  background: var(--color-bg);
+}
+
+.ds-status-badge--applied {
+  color: #1a5fb4;
+  border-color: #1a5fb4;
+  background: #E8F4FC;
+}
+
+.ds-status-badge--rejected {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: #F8E8E8;
+}
+
+.ds-status-badge--selected {
+  color: var(--color-success);
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
 .ds-job-card__actions {
   display: flex;
   flex-wrap: wrap;
@@ -383,6 +438,31 @@
 }
 
 /* -------------------------------------------------------------------------
+   TOAST — Non-blocking notification
+   ------------------------------------------------------------------------- */
+.ds-toast {
+  position: fixed;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 1100;
+  opacity: 0;
+  transition: opacity var(--transition-base), transform var(--transition-base);
+}
+
+.ds-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* -------------------------------------------------------------------------
    DIGEST PAGE — Email-style layout
    ------------------------------------------------------------------------- */
 .ds-digest {
@@ -525,4 +605,50 @@
   font-size: var(--text-base);
   color: var(--color-text-muted);
   margin: 0;
+}
+
+/* -------------------------------------------------------------------------
+   DIGEST — Recent Status Updates
+   ------------------------------------------------------------------------- */
+.ds-digest__updates {
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border);
+}
+
+.ds-digest__updates-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.ds-digest__update-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: var(--border);
+  font-size: var(--text-sm);
+}
+
+.ds-digest__update-item:last-child {
+  border-bottom: none;
+}
+
+.ds-digest__update-title {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.ds-digest__update-company {
+  color: var(--color-text-muted);
+}
+
+.ds-digest__update-date {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
 }

@@ -6,8 +6,82 @@
   "use strict";
 
   var STORAGE_KEY = "job-tracker-saved";
+  var STATUS_KEY = "jobTrackerStatus";
+  var STATUS_UPDATES_KEY = "jobTrackerStatusUpdates";
   var jobs = window.JOBS_DATA || [];
   var Preferences = window.PreferencesModule;
+
+  var VALID_STATUSES = ["Not Applied", "Applied", "Rejected", "Selected"];
+
+  function getStatusMap() {
+    try {
+      var raw = localStorage.getItem(STATUS_KEY);
+      var obj = raw ? JSON.parse(raw) : {};
+      return typeof obj === "object" ? obj : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function getJobStatus(jobId) {
+    var map = getStatusMap();
+    var s = map[jobId];
+    return VALID_STATUSES.indexOf(s) >= 0 ? s : "Not Applied";
+  }
+
+  function setJobStatus(jobId, status, job) {
+    if (VALID_STATUSES.indexOf(status) < 0) return;
+    var map = getStatusMap();
+    map[jobId] = status;
+    try {
+      localStorage.setItem(STATUS_KEY, JSON.stringify(map));
+    } catch (e) {}
+    if (status !== "Not Applied" && job) {
+      var updates = [];
+      try {
+        var raw = localStorage.getItem(STATUS_UPDATES_KEY);
+        updates = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(updates)) updates = [];
+      } catch (e) {}
+      updates.unshift({
+        jobId: jobId,
+        title: job.title || "",
+        company: job.company || "",
+        status: status,
+        dateChanged: new Date().toISOString()
+      });
+      updates = updates.slice(0, 50);
+      try {
+        localStorage.setItem(STATUS_UPDATES_KEY, JSON.stringify(updates));
+      } catch (e) {}
+    }
+  }
+
+  function getStatusUpdates() {
+    try {
+      var raw = localStorage.getItem(STATUS_UPDATES_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function showToast(message) {
+    var existing = document.getElementById("job-tracker-toast");
+    if (existing) existing.remove();
+    var toast = document.createElement("div");
+    toast.id = "job-tracker-toast";
+    toast.className = "ds-toast";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    toast.offsetHeight;
+    toast.classList.add("ds-toast--visible");
+    setTimeout(function () {
+      toast.classList.remove("ds-toast--visible");
+      setTimeout(function () { toast.remove(); }, 200);
+    }, 2500);
+  }
 
   function getSavedIds() {
     try {
@@ -139,6 +213,9 @@
     if (filters.source) {
       result = result.filter(function (j) { return j.source === filters.source; });
     }
+    if (filters.status && filters.status !== "all") {
+      result = result.filter(function (j) { return getJobStatus(j.id) === filters.status; });
+    }
 
     var sortBy = filters.sort || "latest";
     var showOnlyMatches = filters.showOnlyMatches === true;
@@ -175,6 +252,13 @@
     return days + " days ago";
   }
 
+  function getStatusBadgeClass(status) {
+    if (status === "Applied") return "ds-status-badge--applied";
+    if (status === "Rejected") return "ds-status-badge--rejected";
+    if (status === "Selected") return "ds-status-badge--selected";
+    return "ds-status-badge--neutral";
+  }
+
   function renderJobCard(job, isSavedPage) {
     var savedIds = getSavedIds();
     var saved = savedIds.indexOf(job.id) >= 0;
@@ -188,6 +272,12 @@
       var badgeClass = getMatchScoreBadgeClass(matchScore);
       matchBadge = '<span class="ds-match-badge ' + badgeClass + '">' + matchScore + '%</span>';
     }
+
+    var status = getJobStatus(job.id);
+    var statusOpts = VALID_STATUSES.map(function (s) {
+      var sel = status === s ? ' selected' : '';
+      return '<option value="' + escapeHtml(s) + '"' + sel + '>' + escapeHtml(s) + '</option>';
+    }).join("");
 
     return (
       '<article class="ds-job-card" data-job-id="' + escapeHtml(job.id) + '">' +
@@ -205,6 +295,12 @@
       '<p class="ds-job-card__meta">Experience: ' + escapeHtml(job.experience || "") + '</p>' +
       '<p class="ds-job-card__salary">' + escapeHtml(job.salaryRange || "") + '</p>' +
       '<p class="ds-job-card__posted">' + formatPosted(job.postedDaysAgo) + '</p>' +
+      '<div class="ds-job-card__status">' +
+      '<label class="ds-job-card__status-label">Status</label>' +
+      '<select class="ds-input ds-job-card__status-select ds-status-badge ' + getStatusBadgeClass(status) + '" data-status-select>' +
+      statusOpts +
+      "</select>" +
+      "</div>" +
       '<div class="ds-job-card__actions">' +
       '<button type="button" class="ds-btn ds-btn--secondary ds-job-card__view">View</button>' +
       '<button type="button" class="ds-btn ' + saveClass + ' ds-job-card__save">' + saveLabel + '</button>' +
@@ -273,6 +369,7 @@
       mode: (form.querySelector("[data-filter=mode]") || {}).value || "",
       experience: (form.querySelector("[data-filter=experience]") || {}).value || "",
       source: (form.querySelector("[data-filter=source]") || {}).value || "",
+      status: (form.querySelector("[data-filter=status]") || {}).value || "all",
       sort: (form.querySelector("[data-filter=sort]") || {}).value || "latest",
       showOnlyMatches: toggle ? toggle.checked : false
     };
@@ -314,6 +411,19 @@
         btn.classList.add("ds-job-card__save--saved");
       };
     });
+    container.querySelectorAll("[data-status-select]").forEach(function (sel) {
+      sel.onchange = function () {
+        var card = sel.closest(".ds-job-card");
+        var id = card && card.getAttribute("data-job-id");
+        var job = jobs.find(function (j) { return j.id === id; });
+        if (!id || !job) return;
+        var status = sel.value;
+        if (VALID_STATUSES.indexOf(status) < 0) return;
+        setJobStatus(id, status, job);
+        sel.className = "ds-input ds-job-card__status-select ds-status-badge " + getStatusBadgeClass(status);
+        if (status !== "Not Applied") showToast("Status updated: " + status);
+      };
+    });
   }
 
   function renderDashboard(container) {
@@ -336,6 +446,12 @@
     var srcOpts = '<option value="">All sources</option>' + srcs.map(function (s) {
       return '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + "</option>";
     }).join("");
+    var statusOpts =
+      '<option value="all">All</option>' +
+      '<option value="Not Applied">Not Applied</option>' +
+      '<option value="Applied">Applied</option>' +
+      '<option value="Rejected">Rejected</option>' +
+      '<option value="Selected">Selected</option>';
 
     var bannerHtml = "";
     if (!hasPrefs) {
@@ -363,6 +479,7 @@
       '<select class="ds-input ds-filter-bar__select" data-filter="mode">' + modeOpts + '</select>' +
       '<select class="ds-input ds-filter-bar__select" data-filter="experience">' + expOpts + '</select>' +
       '<select class="ds-input ds-filter-bar__select" data-filter="source">' + srcOpts + '</select>' +
+      '<select class="ds-input ds-filter-bar__select" data-filter="status">' + statusOpts + '</select>' +
       '<select class="ds-input ds-filter-bar__select" data-filter="sort">' +
       '<option value="latest">Latest</option>' +
       '<option value="oldest">Oldest</option>' +
@@ -434,6 +551,19 @@
             '<p class="ds-empty__text">Jobs you save for later will appear here.</p>' +
             "</div>";
         }
+      };
+    });
+    container.querySelectorAll("[data-status-select]").forEach(function (sel) {
+      sel.onchange = function () {
+        var card = sel.closest(".ds-job-card");
+        var id = card && card.getAttribute("data-job-id");
+        var job = jobs.find(function (j) { return j.id === id; });
+        if (!id || !job) return;
+        var status = sel.value;
+        if (VALID_STATUSES.indexOf(status) < 0) return;
+        setJobStatus(id, status, job);
+        sel.className = "ds-input ds-job-card__status-select ds-status-badge " + getStatusBadgeClass(status);
+        if (status !== "Not Applied") showToast("Status updated: " + status);
       };
     });
   }
@@ -534,8 +664,34 @@
     var btnEl = container.querySelector("#digest-generate-btn");
 
     function renderDigestContent(data) {
+      var updates = getStatusUpdates();
+      var updatesHtml = "";
+      if (updates.length > 0) {
+        updatesHtml =
+          '<div class="ds-digest__updates">' +
+          '<h2 class="ds-digest__updates-title">Recent Status Updates</h2>' +
+          updates.slice(0, 10).map(function (u) {
+            var d = "";
+            try {
+              var dt = new Date(u.dateChanged);
+              d = dt.toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
+            } catch (e) {}
+            var statusClass = u.status === "Applied" ? "applied" : u.status === "Rejected" ? "rejected" : u.status === "Selected" ? "selected" : "neutral";
+            return (
+              '<div class="ds-digest__update-item">' +
+              '<span class="ds-digest__update-title">' + escapeHtml(u.title || "") + '</span>' +
+              '<span class="ds-digest__update-company">' + escapeHtml(u.company || "") + '</span>' +
+              '<span class="ds-status-badge ds-status-badge--' + statusClass + '">' + escapeHtml(u.status || "") + '</span>' +
+              '<span class="ds-digest__update-date">' + escapeHtml(d) + '</span>' +
+              "</div>"
+            );
+          }).join("") +
+          "</div>";
+      }
+
       if (!data) {
         cardEl.innerHTML =
+          updatesHtml +
           '<div class="ds-digest__empty">' +
           '<p class="ds-digest__empty-text">Click the button above to generate your digest.</p>' +
           "</div>";
@@ -543,6 +699,7 @@
       }
       if (!data.jobs || data.jobs.length === 0) {
         cardEl.innerHTML =
+          updatesHtml +
           '<div class="ds-digest__empty">' +
           '<h2 class="ds-digest__empty-title">No matching roles today</h2>' +
           '<p class="ds-digest__empty-text">Check again tomorrow.</p>' +
@@ -568,6 +725,7 @@
         '<h1 class="ds-digest__headline">Top 10 Jobs For You — 9AM Digest</h1>' +
         '<p class="ds-digest__subtext">' + formattedDate + '</p>' +
         "</div>" +
+        updatesHtml +
         '<div class="ds-digest__list">' + jobsHtml + '</div>' +
         '<div class="ds-digest__footer">' +
         '<p class="ds-digest__footer-text">This digest was generated based on your preferences.</p>' +

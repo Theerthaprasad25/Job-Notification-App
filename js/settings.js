@@ -9,8 +9,9 @@
   var Preferences = window.PreferencesModule;
 
   function escapeHtml(s) {
+    if (s == null) return "";
     var div = document.createElement("div");
-    div.textContent = s;
+    div.textContent = String(s);
     return div.innerHTML;
   }
 

@@ -106,8 +106,9 @@
   }
 
   function escapeHtml(s) {
+    if (s == null) return "";
     var div = document.createElement("div");
-    div.textContent = s;
+    div.textContent = String(s);
     return div.innerHTML;
   }
 
@@ -745,7 +746,11 @@
         if (copyBtn) {
           copyBtn.onclick = function () {
             var text = formatDigestAsPlainText(digestData.jobs);
-            navigator.clipboard.writeText(text).then(function () { copyBtn.textContent = "Copied!"; });
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function () { copyBtn.textContent = "Copied!"; }).catch(function () { copyBtn.textContent = "Copy failed"; });
+            } else {
+              copyBtn.textContent = "Copy failed";
+            }
           };
         }
         if (emailLink) {
@@ -767,7 +772,11 @@
         if (copyBtn) {
           copyBtn.onclick = function () {
             var text = formatDigestAsPlainText(digestData.jobs);
-            navigator.clipboard.writeText(text).then(function () { copyBtn.textContent = "Copied!"; });
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function () { copyBtn.textContent = "Copied!"; }).catch(function () { copyBtn.textContent = "Copy failed"; });
+            } else {
+              copyBtn.textContent = "Copy failed";
+            }
           };
         }
         if (emailLink) {

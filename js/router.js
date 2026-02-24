@@ -9,7 +9,9 @@
     "/saved": { title: "Saved" },
     "/digest": { title: "Digest" },
     "/settings": { title: "Settings" },
-    "/proof": { title: "Proof" }
+    "/proof": { title: "Proof" },
+    "/jt/07-test": { title: "Test Checklist" },
+    "/jt/08-ship": { title: "Ship" }
   };
 
   function getPath() {
@@ -21,9 +23,14 @@
     return ROUTES[path] || null;
   }
 
+  function isJtRoute(path) {
+    return path === "/jt/07-test" || path === "/jt/08-ship";
+  }
+
   function escapeHtml(s) {
+    if (s == null) return "";
     var div = document.createElement("div");
-    div.textContent = s;
+    div.textContent = String(s);
     return div.innerHTML;
   }
 
@@ -91,7 +98,8 @@
     container.className = "ds-route-placeholder ds-proof-page";
     container.innerHTML =
       '<h1 class="ds-proof-page__headline">Proof</h1>' +
-      '<p class="ds-proof-page__subtext">Placeholder for artifact collection.</p>';
+      '<p class="ds-proof-page__subtext">Placeholder for artifact collection.</p>' +
+      '<p class="ds-proof-page__links"><a href="/jt/07-test">Test Checklist</a> · <a href="/jt/08-ship">Ship</a></p>';
   }
 
   function render404(container) {
@@ -121,6 +129,12 @@
       case "/proof":
         renderProof(container);
         break;
+      case "/jt/07-test":
+        renderTestChecklist(container);
+        break;
+      case "/jt/08-ship":
+        renderShipPage(container);
+        break;
       default:
         render404(container);
     }
@@ -135,6 +149,10 @@
     var brandLink = document.querySelector(".ds-topbar__brand");
     if (brandLink) {
       brandLink.classList.toggle("is-active", path === "/");
+    }
+    if (isJtRoute(path)) {
+      links.forEach(function (l) { l.classList.remove("is-active"); });
+      if (brandLink) brandLink.classList.remove("is-active");
     }
   }
 
@@ -155,10 +173,15 @@
     if (!container) return;
 
     document.title = route ? route.title + " — " + APP_TITLE : "Page Not Found — " + APP_TITLE;
-    if (route) {
-      render(container, path);
-    } else {
-      render404(container);
+    try {
+      if (route) {
+        render(container, path);
+      } else {
+        render404(container);
+      }
+    } catch (err) {
+      container.className = "ds-route-placeholder";
+      container.innerHTML = "<p>Something went wrong. Please refresh the page.</p>";
     }
 
     setActiveLink(path);

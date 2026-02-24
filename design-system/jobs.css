@@ -652,3 +652,123 @@
   color: var(--color-text-muted);
   font-size: var(--text-xs);
 }
+
+/* -------------------------------------------------------------------------
+   TEST CHECKLIST PAGE
+   ------------------------------------------------------------------------- */
+.ds-test-page {
+  padding: var(--space-4) var(--space-3);
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+.ds-test__headline {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.ds-test__summary {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-text);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.ds-test__warning {
+  font-size: var(--text-sm);
+  color: var(--color-warning);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.ds-test__list {
+  margin-bottom: var(--space-4);
+}
+
+.ds-test-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: var(--border);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.ds-test-item:last-child {
+  border-bottom: none;
+}
+
+.ds-test-item__checkbox {
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
+}
+
+.ds-test-item__label {
+  flex: 1;
+}
+
+.ds-test-item__tooltip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25em;
+  height: 1.25em;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: var(--border);
+  border-radius: 50%;
+  cursor: help;
+}
+
+.ds-test__reset {
+  margin-top: var(--space-2);
+}
+
+/* -------------------------------------------------------------------------
+   SHIP PAGE
+   ------------------------------------------------------------------------- */
+.ds-ship-page {
+  padding: var(--space-4) var(--space-3);
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+.ds-ship-page__headline {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.ds-ship-page__locked {
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.ds-ship-page__unlocked {
+  font-size: var(--text-lg);
+  color: var(--color-success);
+  margin: 0;
+}
+
+.ds-proof-page__links {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.ds-proof-page__links a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.ds-proof-page__links a:hover {
+  text-decoration: underline;
+}
